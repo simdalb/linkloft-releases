@@ -1,0 +1,65 @@
+name: Verify official download on Android 8 and 17
+
+on:
+  workflow_dispatch:
+    inputs:
+      archive_sha256:
+        description: SHA-256 of the exact draft release archive
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Fresh install on Android API ${{ matrix.api }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - api: '26'
+            expected_api: '26'
+            memory: 2048M
+          - api: '37.0'
+            expected_api: '37'
+            memory: 4096M
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Fetch exact candidate from this repository's draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_SHA: ${{ inputs.archive_sha256 }}
+        run: |
+          [[ "$EXPECTED_SHA" =~ ^[0-9a-f]{64}$ ]]
+          gh release download v0.6.0 --repo "$GITHUB_REPOSITORY" --pattern 'Linkloft-0.6.0-Android-8-plus.apks' --dir candidate
+          printf '%s  %s\n' "$EXPECTED_SHA" 'candidate/Linkloft-0.6.0-Android-8-plus.apks' | sha256sum --check
+          sdkmanager 'build-tools;36.0.0'
+          sudo chown "$USER" /dev/kvm
+      - name: Check original APK signatures and fresh external installation
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api }}
+          target: google_apis
+          arch: x86_64
+          ram-size: ${{ matrix.memory }}
+          disk-size: 6144M
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          disable-animations: true
+          script: python3 tools/verify_download.py --api '${{ matrix.expected_api }}' --archive candidate/Linkloft-0.6.0-Android-8-plus.apks
+      - name: Save installation result and app screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-install-api-${{ matrix.expected_api }}
+          path: verification/
+          if-no-files-found: ignore
