@@ -6,7 +6,7 @@ A YouTube video to watch, a Spotify album to try, a place from Google Maps, an a
 
 [Get Linkloft on Google Play](https://play.google.com/store/apps/details?id=app.linkloft) · [Releases](https://github.com/simdalb/linkloft-releases/releases) · [Website](https://linkloft.app/)
 
-**Current availability:** Stable version 0.6.0 is available on Google Play. Direct APK distribution is being prepared; use Google Play until a stable APK is published under Releases.
+**Current availability:** Stable version 0.6.0 is available on Google Play and under [Releases](https://github.com/simdalb/linkloft-releases/releases/latest). The direct download is a `.apks` package and requires a compatible split APK installer.
 
 <img src="images/good-finds.png" alt="Linkloft: Good finds. All together. An app screenshot with sample links and files." width="320">
 
@@ -31,7 +31,7 @@ Linkloft saves links to online content. Watching a video, listening to music or 
 - Choose from 36 interface languages.
 - Android 8.0 or later.
 
-Your saved library is stored locally. Optional online previews contact content providers, and some Google components send diagnostic and usage data. Read the [privacy policy](https://linkloft.app/privacy) for details. This APK is the public Basic edition; it is not a Google-services-free edition.
+Your saved library is stored locally. Optional online previews contact content providers, and some Google components send diagnostic and usage data. Read the [privacy policy](https://linkloft.app/privacy) for details. This download is the public Basic edition; it is not a Google-services-free edition.
 
 ## App screenshots
 
@@ -41,15 +41,21 @@ Sample content is shown.
 
 ## Install and update
 
-Google Play is the easiest option for most users. If you prefer a direct download, open [Releases](https://github.com/simdalb/linkloft-releases/releases), choose the latest stable version and download its `.apk` file. The matching `SHA256SUMS.txt` records the file checksum.
+Google Play is the easiest option for most users. For a direct download:
 
-Public APKs here are downloaded from Google Play Console and retain Google's app-signing identity. Install updates over the existing app to keep your library. If Android reports a signing conflict, do not uninstall your existing app to work around it; [contact support](https://linkloft.app/feedback) first.
+1. Open [Releases](https://github.com/simdalb/linkloft-releases/releases/latest) and download `Linkloft-0.6.0-Android-8-plus.apks`.
+2. Open it with a split APK installer such as [APKMirror Installer (Official)](https://play.google.com/store/apps/details?id=com.apkmirror.helper.prod), then follow the installation prompts. Keep the archive together; installing `base.apk` alone will not work.
+3. The matching `SHA256SUMS.txt` records the download checksums. `PROVENANCE.json` lists the original APK checksums and Google Play signing fingerprint.
+
+The package requires Android 8.0 or later and supports all processor architectures. It contains eight original APKs retrieved through Google's Play Developer API. Their bytes and Google Play signatures are preserved; none was merged, modified or re-signed. Install updates over the existing app to keep your library. If Android reports a signing conflict, do not uninstall your existing app to work around it; [contact support](https://linkloft.app/feedback) first.
 
 Direct-download users can follow this repository's releases or [subscribe to optional release emails](https://linkloft.app/updates#email-updates). Google Play may also offer a compatible newer release when it is available to your account and device. This repository does not provide an automatic APK updater.
 
+Fresh external installation and launch were verified on Android 8 and Android 16. See [download verification](VERIFICATION.md) for the tested file and the Android 17 test-device limitation.
+
 ## Feedback and support
 
-[Send private feedback](https://linkloft.app/feedback) · [Ideas and progress](https://linkloft.app/ideas) · [What's new](https://linkloft.app/updates) · [Privacy](https://linkloft.app/privacy)
+[Send private feedback](https://linkloft.app/feedback) · [Ideas and progress](https://linkloft.app/ideas) · [What's new](https://linkloft.app/updates) · [XDA discussion](https://xdaforums.com/t/app-8-0-linkloft-store-all-kinds-of-links-together-by-subject-on-your-phone.4805448/) · [Privacy](https://linkloft.app/privacy)
 
 Please include your Linkloft version and Android version when reporting a problem. Do not post your saved library, personal links or private diagnostic details publicly.
 

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       archive_sha256:
-        description: SHA-256 of the exact draft release archive
+        description: SHA-256 of the exact published release archive
         required: true
         type: string
       modern_only:
@@ -17,15 +17,11 @@ permissions:
 
 jobs:
   fetch:
-    name: Read the unpublished candidate
+    name: Read the published download
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    # GitHub requires push access to read draft releases. This short job only
-    # downloads the fixed candidate; emulator jobs retain read-only access.
-    permissions:
-      contents: write
     steps:
-      - name: Retrieve the exact draft asset
+      - name: Retrieve the exact release asset
         env:
           GH_TOKEN: ${{ github.token }}
           EXPECTED_SHA: ${{ inputs.archive_sha256 }}
@@ -35,7 +31,7 @@ jobs:
           printf '%s  %s\n' "$EXPECTED_SHA" 'candidate/Linkloft-0.6.0-Android-8-plus.apks' | sha256sum --check
       - uses: actions/upload-artifact@v4
         with:
-          name: exact-unpublished-candidate
+          name: exact-release-download
           path: candidate/Linkloft-0.6.0-Android-8-plus.apks
           retention-days: 1
   verify:
@@ -61,7 +57,7 @@ jobs:
           log-accepted-android-sdk-licenses: false
       - uses: actions/download-artifact@v4
         with:
-          name: exact-unpublished-candidate
+          name: exact-release-download
           path: candidate
       - name: Check candidate checksum and prepare Android tools
         env:
@@ -78,7 +74,7 @@ jobs:
           target: google_apis
           arch: x86_64
           ram-size: ${{ matrix.api == '26' && '2048M' || '4096M' }}
-          profile: ${{ matrix.api == '26' && '' || 'pixel_6' }}
+          profile: ${{ matrix.api != '26' && 'pixel_6' || '' }}
           disk-size: 6144M
           emulator-options: -no-window -gpu swiftshader -feature -Vulkan -no-snapshot -noaudio -no-boot-anim
           disable-animations: true

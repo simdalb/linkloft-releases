@@ -6,4 +6,4 @@
 - Local image previews use less memory.
 - Optional update offers appear as soon as Google Play makes an update available.
 
-This is the stable public Basic release, also available on Google Play. The APK requires Android 8.0 or later.
+This is the stable public Basic release, also available on Google Play. The direct `.apks` download requires Android 8.0 or later and a compatible split APK installer. It preserves Google's original app-signing identity.
