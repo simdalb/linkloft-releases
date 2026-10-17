@@ -7,6 +7,10 @@ on:
         description: SHA-256 of the exact draft release archive
         required: true
         type: string
+      android17_only:
+        description: Recheck Android 17 after Android 8 has passed
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -42,15 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - api: '26'
-            expected_api: '26'
-            memory: 2048M
-            gpu: swiftshader_indirect
-          - api: '37.0'
-            expected_api: '37'
-            memory: 4096M
-            gpu: swiftshader
+        api: ${{ fromJSON(inputs.android17_only && '["37"]' || '["26","37"]') }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -78,19 +74,19 @@ jobs:
       - name: Check original APK signatures and fresh external installation
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: ${{ matrix.api }}
+          api-level: ${{ matrix.api == '37' && '37.0' || matrix.api }}
           target: google_apis
           arch: x86_64
-          ram-size: ${{ matrix.memory }}
-          profile: ${{ matrix.expected_api == '37' && 'pixel_6' || '' }}
+          ram-size: ${{ matrix.api == '37' && '4096M' || '2048M' }}
+          profile: ${{ matrix.api == '37' && 'pixel_6' || '' }}
           disk-size: 6144M
-          emulator-options: -no-window -gpu ${{ matrix.gpu }} -no-snapshot -noaudio -no-boot-anim
+          emulator-options: -no-window -gpu ${{ matrix.api == '37' && 'swiftshader' || 'swiftshader_indirect' }} -no-snapshot -noaudio -no-boot-anim
           disable-animations: true
-          script: python3 tools/verify_download.py --api '${{ matrix.expected_api }}' --archive candidate/Linkloft-0.6.0-Android-8-plus.apks
+          script: python3 tools/verify_download.py --api '${{ matrix.api }}' --archive candidate/Linkloft-0.6.0-Android-8-plus.apks
       - name: Save installation result and app screenshot
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: external-install-api-${{ matrix.expected_api }}
+          name: external-install-api-${{ matrix.api }}
           path: verification/
           if-no-files-found: ignore

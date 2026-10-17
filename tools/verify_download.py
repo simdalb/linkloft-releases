@@ -17,7 +17,7 @@ OUT = Path("verification")
 def run(*command, binary=False, timeout=120):
     result = subprocess.run(command, capture_output=True, timeout=timeout)
     if result.returncode:
-        raise RuntimeError(result.stderr.decode(errors="replace")[-2000:])
+        raise RuntimeError("Command failed: " + " ".join(command[:5]) + "\n" + result.stdout.decode(errors="replace")[-3000:] + "\n" + result.stderr.decode(errors="replace")[-2000:])
     return result.stdout if binary else result.stdout.decode(errors="replace")
 
 
@@ -106,4 +106,18 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as error:
+        OUT.mkdir(exist_ok=True)
+        (OUT / "failure.txt").write_text(str(error), encoding="utf-8")
+        if os.environ.get("RUNNER_ENVIRONMENT") == "github-hosted" and os.environ.get("GITHUB_REPOSITORY") == "simdalb/linkloft-releases":
+            for name, command in (
+                ("activity-state.txt", ["adb", "shell", "dumpsys", "activity", "activities"]),
+                ("package-state.txt", ["adb", "shell", "dumpsys", "package", PACKAGE]),
+                ("crash-log.txt", ["adb", "logcat", "-d", "-s", "AndroidRuntime:E", "ActivityManager:E", "PackageManager:E"]),
+                ("failure-screen.png", ["adb", "exec-out", "screencap", "-p"]),
+            ):
+                result = subprocess.run(command, capture_output=True, timeout=30)
+                (OUT / name).write_bytes(result.stdout)
+        raise
