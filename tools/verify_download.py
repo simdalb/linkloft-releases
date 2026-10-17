@@ -38,6 +38,16 @@ def main():
 
     assert adb("shell", "getprop", "ro.kernel.qemu").strip() == "1"
     assert adb("shell", "getprop", "ro.build.version.sdk").strip() == args.api
+    # sys.boot_completed can precede a stable package service on a new image.
+    time.sleep(30)
+    for attempt in range(12):
+        try:
+            assert "package:android" in adb("shell", "pm", "list", "packages", "android")
+            break
+        except (RuntimeError, AssertionError):
+            if attempt == 11:
+                raise
+            time.sleep(5)
     # Refuse replacement installs or any pre-existing user's library.
     assert not adb("shell", "pm", "list", "packages", PACKAGE).strip()
     extracted = Path("candidate/extracted")
@@ -61,7 +71,18 @@ def main():
     assert "maxSdkVersion" not in manifest
     badging = run(str(tools / "aapt2"), "dump", "badging", str(base))
     assert "versionCode='20'" in badging and "minSdkVersion:'26'" in badging
-    install = adb("install-multiple", "--no-streaming", *map(str, apk_paths), timeout=180)
+    for attempt in range(3):
+        try:
+            install = adb("install-multiple", "--no-streaming", *map(str, apk_paths), timeout=180)
+            break
+        except RuntimeError as error:
+            if attempt == 2 or not any(marker in str(error) for marker in ("Broken pipe", "device offline", "Can't find service")):
+                (OUT / "installer-error.txt").write_text(str(error), encoding="utf-8")
+                (OUT / "system-crash-log.txt").write_text(adb("logcat", "-d", "-s", "AndroidRuntime:E"), encoding="utf-8")
+                raise
+            print("The emulator package service is restarting; waiting before retry.", flush=True)
+            time.sleep(15)
+            assert not adb("shell", "pm", "list", "packages", PACKAGE).strip()
     assert "Success" in install
     adb("shell", "input", "keyevent", "KEYCODE_WAKEUP")
     adb("shell", "wm", "dismiss-keyguard")

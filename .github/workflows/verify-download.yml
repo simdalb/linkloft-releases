@@ -46,9 +46,11 @@ jobs:
           - api: '26'
             expected_api: '26'
             memory: 2048M
+            gpu: swiftshader_indirect
           - api: '37.0'
             expected_api: '37'
             memory: 4096M
+            gpu: swiftshader
     steps:
       - uses: actions/checkout@v4
         with:
@@ -80,8 +82,9 @@ jobs:
           target: google_apis
           arch: x86_64
           ram-size: ${{ matrix.memory }}
+          profile: ${{ matrix.expected_api == '37' && 'pixel_6' || '' }}
           disk-size: 6144M
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          emulator-options: -no-window -gpu ${{ matrix.gpu }} -no-snapshot -noaudio -no-boot-anim
           disable-animations: true
           script: python3 tools/verify_download.py --api '${{ matrix.expected_api }}' --archive candidate/Linkloft-0.6.0-Android-8-plus.apks
       - name: Save installation result and app screenshot
