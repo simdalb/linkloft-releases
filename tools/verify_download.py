@@ -48,6 +48,13 @@ def main():
             if attempt == 11:
                 raise
             time.sleep(5)
+    baseline = adb("shell", "am", "start", "-W", "-a", "android.settings.SETTINGS")
+    (OUT / "system-settings-baseline.txt").write_text(baseline, encoding="utf-8")
+    assert "Status: ok" in baseline, "The emulator cannot open its own Settings app"
+    baseline_screen = adb("exec-out", "screencap", "-p", binary=True)
+    assert baseline_screen.startswith(b"\x89PNG"), "The emulator's screen capture service failed"
+    (OUT / "system-settings-baseline.png").write_bytes(baseline_screen)
+    adb("shell", "input", "keyevent", "KEYCODE_HOME")
     # Refuse replacement installs or any pre-existing user's library.
     assert not adb("shell", "pm", "list", "packages", PACKAGE).strip()
     extracted = Path("candidate/extracted")
@@ -86,7 +93,8 @@ def main():
     assert "Success" in install
     adb("shell", "input", "keyevent", "KEYCODE_WAKEUP")
     adb("shell", "wm", "dismiss-keyguard")
-    launch = adb("shell", "am", "start", "-W", "-n", PACKAGE + "/com.simon.universallinklibrary.MainActivity")
+    launch = adb("shell", "am", "start", "-W", "-a", "android.intent.action.MAIN", "-c", "android.intent.category.LAUNCHER", "-n", PACKAGE + "/com.simon.universallinklibrary.LauncherLoft")
+    (OUT / "app-launch.txt").write_text(launch, encoding="utf-8")
     assert "Status: ok" in launch, launch
     time.sleep(12)
     pid = adb("shell", "pidof", PACKAGE).strip()
@@ -116,6 +124,7 @@ if __name__ == "__main__":
                 ("activity-state.txt", ["adb", "shell", "dumpsys", "activity", "activities"]),
                 ("package-state.txt", ["adb", "shell", "dumpsys", "package", PACKAGE]),
                 ("crash-log.txt", ["adb", "logcat", "-d", "-s", "AndroidRuntime:E", "ActivityManager:E", "PackageManager:E"]),
+                ("full-device-log.txt", ["adb", "logcat", "-d", "-v", "threadtime"]),
                 ("failure-screen.png", ["adb", "exec-out", "screencap", "-p"]),
             ):
                 result = subprocess.run(command, capture_output=True, timeout=30)

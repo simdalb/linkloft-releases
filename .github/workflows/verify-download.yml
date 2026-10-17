@@ -1,4 +1,4 @@
-name: Verify official download on Android 8 and 17
+name: Verify official download on supported Android versions
 
 on:
   workflow_dispatch:
@@ -7,8 +7,8 @@ on:
         description: SHA-256 of the exact draft release archive
         required: true
         type: string
-      android17_only:
-        description: Recheck Android 17 after Android 8 has passed
+      modern_only:
+        description: Recheck Android 16 and 17 after Android 8 has passed
         type: boolean
         default: false
 
@@ -46,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api: ${{ fromJSON(inputs.android17_only && '["37"]' || '["26","37"]') }}
+        api: ${{ fromJSON(inputs.modern_only && '["36","37"]' || '["26","36","37"]') }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -77,10 +77,10 @@ jobs:
           api-level: ${{ matrix.api == '37' && '37.0' || matrix.api }}
           target: google_apis
           arch: x86_64
-          ram-size: ${{ matrix.api == '37' && '4096M' || '2048M' }}
-          profile: ${{ matrix.api == '37' && 'pixel_6' || '' }}
+          ram-size: ${{ matrix.api == '26' && '2048M' || '4096M' }}
+          profile: ${{ matrix.api == '26' && '' || 'pixel_6' }}
           disk-size: 6144M
-          emulator-options: -no-window -gpu ${{ matrix.api == '37' && 'swiftshader' || 'swiftshader_indirect' }} -no-snapshot -noaudio -no-boot-anim
+          emulator-options: -no-window -gpu swiftshader -feature -Vulkan -no-snapshot -noaudio -no-boot-anim
           disable-animations: true
           script: python3 tools/verify_download.py --api '${{ matrix.api }}' --archive candidate/Linkloft-0.6.0-Android-8-plus.apks
       - name: Save installation result and app screenshot
