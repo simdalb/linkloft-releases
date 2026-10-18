@@ -47,6 +47,8 @@ Google Play is the easiest option for most users. For a direct download:
 2. Open it with a split APK installer such as [APKMirror Installer (Official)](https://play.google.com/store/apps/details?id=com.apkmirror.helper.prod), then follow the installation prompts. Keep the archive together; installing `base.apk` alone will not work.
 3. The matching `SHA256SUMS.txt` records the download checksums. `PROVENANCE.json` lists the original APK checksums and Google Play signing fingerprint.
 
+GitHub also generates archives labelled **Source code**. Those contain this download repository's documentation, images and verification scripts, not Linkloft's Android application source. Choose the `.apks` file to install the app.
+
 The package requires Android 8.0 or later and supports all processor architectures. It contains eight original APKs retrieved through Google's Play Developer API. Their bytes and Google Play signatures are preserved; none was merged, modified or re-signed. Install updates over the existing app to keep your library. If Android reports a signing conflict, do not uninstall your existing app to work around it; [contact support](https://linkloft.app/feedback) first.
 
 Direct-download users can follow this repository's releases or [subscribe to optional release emails](https://linkloft.app/updates#email-updates). Google Play may also offer a compatible newer release when it is available to your account and device. This repository does not provide an automatic APK updater.
